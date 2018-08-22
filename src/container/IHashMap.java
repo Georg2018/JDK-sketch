@@ -62,18 +62,18 @@ public class IHashMap<K, V> implements Map<K, V> {
 
 	@SuppressWarnings("unchecked")
 	private Node<K, V>[] resize() {
-		//size == 0，需要对table进行初始化
+		// size == 0，需要对table进行初始化
 		if (size == 0) {
 			capacity = initialCapacity;
 			threshold = (int) (capacity * loadFactor);
 			table = new Node[capacity];
 			return table;
 		}
-		//size <= threshold ，不需要扩容
+		// size <= threshold ，不需要扩容
 		if (size <= threshold) {
 			return table;
-		} 
-		//(size > threshold) 的情况下
+		}
+		// (size > threshold) 的情况下
 		else {
 			// 考虑极端情况，table已经扩容到极限了
 			if (capacity > maxCapacity) {
@@ -213,8 +213,37 @@ public class IHashMap<K, V> implements Map<K, V> {
 
 	@Override
 	public V put(K key, V value) {
-		// TODO Auto-generated method stub
-		return null;
+		Node<K, V> node = new Node<K, V>(key, value);
+		// 对table进行一些适当的修正
+		table = resize();
+		// 第一次向table中加入数据
+		if (size == 0) {
+			table[(capacity - 1) & node.hashCode] = node;
+			size++;
+		}
+		// 更一般的，向table中加入数据时，处理冲突
+		else {
+			Node<K, V> oldNode = table[(capacity - 1) & node.hashCode];
+			if (oldNode == null) {
+				table[(capacity - 1) & node.hashCode] = node;
+				size++;
+			} else {
+				//遍历链表
+				Node<K, V> e = oldNode;
+				while (e != null) {
+					//判别两个节点的key是否相等并且哈希值是否相等，如果相等，视为重复节点，不予插入
+					if (e.hashCode == node.hashCode
+							&& ((e.key == node.key) || (node.key != null && node.key.equals(e.key))))
+						return e.value;
+					//如果到了链表结尾，直接把节点续上
+					if(e.next == null) {
+						e.next = node;
+					}
+					e = e.next;
+				}
+			}
+		}
+		return node.value;
 	}
 
 	@Override
