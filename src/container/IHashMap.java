@@ -18,9 +18,9 @@ public class IHashMap<K, V> implements Map<K, V> {
 	private Node<K, V>[] table = (Node<K, V>[]) new Node[initialCapacity];
 
 	class Node<K, V> implements Map.Entry<K, V> {
-		K key;
+		final K key;
 		V value;
-		int hashCode;
+		final int hashCode;
 		Node<K, V> next;
 
 		Node(K key, V value) {
