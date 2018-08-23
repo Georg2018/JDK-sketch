@@ -1,6 +1,6 @@
 package datastructure;
 
-public class RBTree<T extends Comparable<T>> {
+public class IRBTree<T extends Comparable<T>> {
 	//红黑两色
 	enum Color {
 		RED, BLACK
@@ -24,7 +24,7 @@ public class RBTree<T extends Comparable<T>> {
 	//红黑树的根节点
 	private TreeNode root;
 
-	public RBTree(RBTree<T>.TreeNode root) {
+	public IRBTree(IRBTree<T>.TreeNode root) {
 		this.root = root;
 	}
 
