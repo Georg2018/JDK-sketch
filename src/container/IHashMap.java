@@ -5,18 +5,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+//这里没有在链表size大于8时进行链表到红黑树的转换，红黑树结构在别处有实现
 public class IHashMap<K, V> implements Map<K, V> {
-	private static final float initialLoadFactor = 0.75F;// 默认装载系数
+	private static final float defaultLoadFactor = 0.75F;// 默认装载系数
 	private static final int initialCapacity = 1 << 4; // 初始的容量 16
 	private static final int maxCapacity = 1 << 30; //
-	private float loadFactor = initialLoadFactor;
+	private float loadFactor = defaultLoadFactor;
 	private int capacity; // 表容量
 	private int size; // 表大小
 	private int threshold; // 阈值,超过此阈值则需要扩容
-	// 初始化表
+	// 表
 	@SuppressWarnings("unchecked")
-	private Node<K, V>[] table = (Node<K, V>[]) new Node[initialCapacity];
-
+	private Node<K, V>[] table;
+	private int modCount;
+	
+	//Hashmap最基本的数据结构：节点Node
 	class Node<K, V> implements Map.Entry<K, V> {
 		final K key;
 		V value;
@@ -195,7 +198,23 @@ public class IHashMap<K, V> implements Map<K, V> {
 
 	@Override
 	public V get(Object key) {
-		// TODO Auto-generated method stub
+		//key为空则返回空值
+		if(key == null) return null;
+		
+		int hashCode = hash(key);
+		Node<K, V> oldNode = table[hashCode & (capacity - 1)];
+		//如果老节点为空，说明无此数值
+		if(oldNode == null)
+			return null;
+		//遍历链表查找数值
+		else {
+			Node<K, V> e = oldNode;
+			while(e != null) {
+				if(hashCode == e.hashCode && key.equals(e.key))
+					return e.value;
+				e = e.next;
+			}
+		}
 		return null;
 	}
 
@@ -214,30 +233,46 @@ public class IHashMap<K, V> implements Map<K, V> {
 	@Override
 	public V put(K key, V value) {
 		Node<K, V> node = new Node<K, V>(key, value);
-		// 对table进行一些适当的修正
-		table = resize();
+
 		// 第一次向table中加入数据
 		if (size == 0) {
+			// 初始化table
+			table = resize();
 			table[(capacity - 1) & node.hashCode] = node;
 			size++;
+			modCount++;
 		}
 		// 更一般的，向table中加入数据时，处理冲突
 		else {
+			// 获取老节点
 			Node<K, V> oldNode = table[(capacity - 1) & node.hashCode];
+			// 老节点为空，可直接插入此处
 			if (oldNode == null) {
+				// 插入之前，判断size是否超过阈值，超过则resize
+				if (++size > this.threshold)
+					table = resize();
 				table[(capacity - 1) & node.hashCode] = node;
-				size++;
+				modCount++;
 			} else {
-				//遍历链表
+				// 遍历链表
 				Node<K, V> e = oldNode;
 				while (e != null) {
-					//判别两个节点的key是否相等并且哈希值是否相等，如果相等，视为重复节点，不予插入
+					// 判别两个节点的key是否相等并且哈希值是否相等，如果相等，则修改旧值
 					if (e.hashCode == node.hashCode
-							&& ((e.key == node.key) || (node.key != null && node.key.equals(e.key))))
-						return e.value;
-					//如果到了链表结尾，直接把节点续上
-					if(e.next == null) {
+							&& ((e.key == node.key) || (node.key != null && node.key.equals(e.key)))) {
+						e.value = node.value;
+						modCount++;
+						node = e;
+						break;
+					}
+
+					// 如果到了链表结尾，直接把节点续上
+					if (e.next == null) {
+						// 插入之前，判断size是否超过阈值，超过则resize
+						if (++size > this.threshold)
+							table = resize();
 						e.next = node;
+						modCount++;
 					}
 					e = e.next;
 				}
@@ -260,8 +295,7 @@ public class IHashMap<K, V> implements Map<K, V> {
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.size;
 	}
 
 	@Override
