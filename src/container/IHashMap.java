@@ -18,8 +18,8 @@ public class IHashMap<K, V> implements Map<K, V> {
 	@SuppressWarnings("unchecked")
 	private Node<K, V>[] table;
 	private int modCount;
-	
-	//Hashmap最基本的数据结构：节点Node
+
+	// Hashmap最基本的数据结构：节点Node
 	class Node<K, V> implements Map.Entry<K, V> {
 		final K key;
 		V value;
@@ -48,6 +48,30 @@ public class IHashMap<K, V> implements Map<K, V> {
 			this.value = value;
 			return this.value;
 		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public boolean equals(Object n) {
+			if (n instanceof Node) {
+				Node<K, V> node2 = (Node<K, V>) n;
+				return key.equals(node2.key) && value.equals(node2.value);
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(key) ^ Objects.hashCode(value);
+		}
+
+		@Override
+		public String toString() {
+			String keyStr = key == null ? "null" : key.toString();
+			String valueStr = value == null ? "null" : value.toString();
+
+			return keyStr + " : " + valueStr;
+		}
+
 	}
 
 	// 关键设计
@@ -128,7 +152,7 @@ public class IHashMap<K, V> implements Map<K, V> {
 									unchangedTail.next = node;
 									// 更新链表尾部的位置，将链表尾部的next设置为空
 									unchangedTail = node;
-									unchangedTail.next = null;
+									
 								}
 
 							}
@@ -146,7 +170,7 @@ public class IHashMap<K, V> implements Map<K, V> {
 									changedTail.next = node;
 									// 更新链表尾部的位置，将链表尾部的next设置为空
 									changedTail = node;
-									changedTail.next = null;
+									
 								}
 
 							}
@@ -156,11 +180,15 @@ public class IHashMap<K, V> implements Map<K, V> {
 
 						// 将unchangedHead链表加入新表的老位置
 						if (unchangedHead != null) {
+							unchangedTail.next = null;
+							System.out.println("unchanged " + unchangedHead + " : " + ((oldCapacity - 1) & unchangedHead.hashCode));
 							newTab[(oldCapacity - 1) & unchangedHead.hashCode] = unchangedHead;
 						}
 						// 将changedHead链表加入新表的新位置
 						if (changedHead != null) {
-							newTab[((oldCapacity - 1) & unchangedHead.hashCode) + capacity] = changedHead;
+							changedTail.next = null;
+							System.out.println("changed " + changedHead + " : " + ((((oldCapacity - 1) & changedHead.hashCode)) + oldCapacity));
+							newTab[(((oldCapacity - 1) & changedHead.hashCode)) + oldCapacity] = changedHead;
 						}
 
 					}
@@ -198,19 +226,20 @@ public class IHashMap<K, V> implements Map<K, V> {
 
 	@Override
 	public V get(Object key) {
-		//key为空则返回空值
-		if(key == null) return null;
-		
+		// key为空则返回空值
+		if (key == null)
+			return null;
+
 		int hashCode = hash(key);
 		Node<K, V> oldNode = table[hashCode & (capacity - 1)];
-		//如果老节点为空，说明无此数值
-		if(oldNode == null)
+		// 如果老节点为空，说明无此数值
+		if (oldNode == null)
 			return null;
-		//遍历链表查找数值
+		// 遍历链表查找数值
 		else {
 			Node<K, V> e = oldNode;
-			while(e != null) {
-				if(hashCode == e.hashCode && key.equals(e.key))
+			while (e != null) {
+				if (hashCode == e.hashCode && key.equals(e.key))
 					return e.value;
 				e = e.next;
 			}
@@ -304,4 +333,61 @@ public class IHashMap<K, V> implements Map<K, V> {
 		return null;
 	}
 
+	public void printMap() {
+		print: for (Node<K, V> node : table) {
+			if (node == null) {
+				continue print;
+			}
+			System.out.print(node.toString() + " -> ");
+			Node<K, V> e = node.next;
+			while (e != null) {
+				System.out.print(e.toString() + " -> ");
+				e = e.next;
+			}
+			System.out.println("");
+		}
+	}
+
+	public static void main(String[] args) {
+		IHashMap<Foo, String> map = new IHashMap<>();
+		// for (int i = 0; i != 26; i++) {
+		// // System.out.println((char) (i + 97) + " : " + (i + 1));
+		// map.put(String.valueOf((char) (i + 97)), String.valueOf(i + 1));
+		// }
+		// map.printMap();
+
+		for (int i = 0; i != 26; i++) {
+			// System.out.println((char) (i + 97) + " : " + (i + 1));
+			for (int j = 0; j != 3; j++) {
+				Foo f = new Foo(String.valueOf((char) (i + 97)), j);
+				map.put(f, String.valueOf(i + j));
+
+			}
+			map.printMap();
+			System.out.println("++++++++++++++++++++++++++++++++++++");
+		}
+		map.printMap();
+	}
+}
+
+class Foo {
+	int num;
+	String s;
+
+	public Foo(String s, int num) {
+		this.s = s;
+		this.num = num;
+	}
+
+	public int hashCode() {
+		return s.hashCode();
+	}
+
+	public boolean equals(Object o) {
+		return this == o;
+	}
+
+	public String toString() {
+		return s + num;
+	}
 }
