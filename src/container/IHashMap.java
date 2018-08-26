@@ -152,7 +152,7 @@ public class IHashMap<K, V> implements Map<K, V> {
 									unchangedTail.next = node;
 									// 更新链表尾部的位置，将链表尾部的next设置为空
 									unchangedTail = node;
-									
+
 								}
 
 							}
@@ -170,7 +170,7 @@ public class IHashMap<K, V> implements Map<K, V> {
 									changedTail.next = node;
 									// 更新链表尾部的位置，将链表尾部的next设置为空
 									changedTail = node;
-									
+
 								}
 
 							}
@@ -181,13 +181,15 @@ public class IHashMap<K, V> implements Map<K, V> {
 						// 将unchangedHead链表加入新表的老位置
 						if (unchangedHead != null) {
 							unchangedTail.next = null;
-							System.out.println("unchanged " + unchangedHead + " : " + ((oldCapacity - 1) & unchangedHead.hashCode));
+							System.out.println("unchanged " + unchangedHead + " : "
+									+ ((oldCapacity - 1) & unchangedHead.hashCode));
 							newTab[(oldCapacity - 1) & unchangedHead.hashCode] = unchangedHead;
 						}
 						// 将changedHead链表加入新表的新位置
 						if (changedHead != null) {
 							changedTail.next = null;
-							System.out.println("changed " + changedHead + " : " + ((((oldCapacity - 1) & changedHead.hashCode)) + oldCapacity));
+							System.out.println("changed " + changedHead + " : "
+									+ ((((oldCapacity - 1) & changedHead.hashCode)) + oldCapacity));
 							newTab[(((oldCapacity - 1) & changedHead.hashCode)) + oldCapacity] = changedHead;
 						}
 
@@ -368,6 +370,72 @@ public class IHashMap<K, V> implements Map<K, V> {
 		}
 		map.printMap();
 	}
+	// 测试结果（局部）
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// c0 : 2 -> c1 : 3 -> c2 : 4 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// c0 : 2 -> c1 : 3 -> c2 : 4 ->
+	// d0 : 3 -> d1 : 4 -> d2 : 5 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// unchanged a0 : 0 : 1
+	// unchanged b0 : 1 : 2
+	// unchanged c0 : 2 : 3
+	// unchanged d0 : 3 : 4
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// c0 : 2 -> c1 : 3 -> c2 : 4 ->
+	// d0 : 3 -> d1 : 4 -> d2 : 5 ->
+	// e0 : 4 -> e1 : 5 -> e2 : 6 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// c0 : 2 -> c1 : 3 -> c2 : 4 ->
+	// d0 : 3 -> d1 : 4 -> d2 : 5 ->
+	// e0 : 4 -> e1 : 5 -> e2 : 6 ->
+	// f0 : 5 -> f1 : 6 -> f2 : 7 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// c0 : 2 -> c1 : 3 -> c2 : 4 ->
+	// d0 : 3 -> d1 : 4 -> d2 : 5 ->
+	// e0 : 4 -> e1 : 5 -> e2 : 6 ->
+	// f0 : 5 -> f1 : 6 -> f2 : 7 ->
+	// g0 : 6 -> g1 : 7 -> g2 : 8 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// c0 : 2 -> c1 : 3 -> c2 : 4 ->
+	// d0 : 3 -> d1 : 4 -> d2 : 5 ->
+	// e0 : 4 -> e1 : 5 -> e2 : 6 ->
+	// f0 : 5 -> f1 : 6 -> f2 : 7 ->
+	// g0 : 6 -> g1 : 7 -> g2 : 8 ->
+	// h0 : 7 -> h1 : 8 -> h2 : 9 ->
+	// ++++++++++++++++++++++++++++++++++++
+	// changed a0 : 0 : 33
+	// changed b0 : 1 : 34
+	// changed c0 : 2 : 35
+	// changed d0 : 3 : 36
+	// changed e0 : 4 : 37
+	// changed f0 : 5 : 38
+	// changed g0 : 6 : 39
+	// changed h0 : 7 : 40
+	// a0 : 0 -> a1 : 1 -> a2 : 2 ->
+	// b0 : 1 -> b1 : 2 -> b2 : 3 ->
+	// c0 : 2 -> c1 : 3 -> c2 : 4 ->
+	// d0 : 3 -> d1 : 4 -> d2 : 5 ->
+	// e0 : 4 -> e1 : 5 -> e2 : 6 ->
+	// f0 : 5 -> f1 : 6 -> f2 : 7 ->
+	// g0 : 6 -> g1 : 7 -> g2 : 8 ->
+	// h0 : 7 -> h1 : 8 -> h2 : 9 ->
+	// i0 : 8 -> i1 : 9 -> i2 : 10 ->
 }
 
 class Foo {
